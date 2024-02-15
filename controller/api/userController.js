@@ -21,7 +21,7 @@ class userController {
       if (existingUser) {
         return res.status(400).json({ message: "Email already exists" });
       }
-      const hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+      const hashedPassword = bcrypt.hashSync(password, 10);
 
       const saveData = await User.create({
         name,
@@ -56,12 +56,12 @@ class userController {
       });
 
       if (!user) {
-        return res.status(400).json({ message: "Invalid email or password" });
+        return res.status(400).json({ message: "Invalid email" });
       }
 
-      const isPasswordValid = bcrypt.compareSync(password, user.password);
+      const isPasswordValid = bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
-        return res.status(400).json({ message: "Invalid email or password" });
+        return res.status(400).json({ message: "Invalid password" });
       }
 
       const token = jwt.sign({ id: user.id }, jwtSecret, { expiresIn: "1h" });

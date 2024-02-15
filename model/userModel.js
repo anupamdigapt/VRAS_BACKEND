@@ -1,15 +1,37 @@
-const db = require('../config/database');
+const Sequelize = require('sequelize');
+const bcrypt = require('bcryptjs');
+const sequelize = require('../config/db');
 
-class User {
-  static async findByUsername(username) {
-    const [rows, fields] = await db.promise().query('SELECT * FROM users WHERE username = ?', [username]);
-    return rows[0];
-  }
+const User = sequelize.define('user', {
+  name: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  email: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    unique: true,
+  },
+  password: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  createdAt: {
+    type: Sequelize.DATE,
+    allowNull: false,
+  },
+  updatedAt: {
+    type: Sequelize.DATE,
+    allowNull: false,
+  },
+},{
+  timestamps: true,
+});
 
-  static async create(username, password) {
-    const [result, fields] = await db.promise().execute('INSERT INTO users (username, password) VALUES (?, ?)', [username, password]);
-    return result.insertId;
-  }
-}
+
+User.beforeCreate(async (user) => {
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(user.password, salt);
+});
 
 module.exports = User;
